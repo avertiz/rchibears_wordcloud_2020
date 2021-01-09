@@ -4,7 +4,7 @@ import time
 import codecs
 import pandas as pd
 
-class WordCloud():
+class Rchibearstext():
     def __init__(self, name, start_time, end_time, subreddit = 'chibears', 
                                              submission_url = 'https://api.pushshift.io/reddit/search/submission/', 
                                              comments_url = 'https://api.pushshift.io/reddit/search/comment/'):
@@ -25,28 +25,40 @@ class WordCloud():
         data = json.loads(r.text)
         return pd.json_normalize(data['data'])
     
-    def createFile(self):
-        f = codecs.open(self.name + ".txt", "a", encoding='utf8')
+    def createFile(self, filepath):
+        f = codecs.open(filepath + self.name + ".txt", "a", encoding='utf8')
         placeholder = self.start_time
         submissions = self.getSubmissions(after = placeholder)
         while len(submissions) != 0:
             print("Getting submissions....",placeholder)
             for row in range(len(submissions)):
-                if submissions['removed_by_category'].iloc[row] is not None:
-                    f.write(str(submissions['title'].iloc[row]) + " ")
-                    f.write(str(submissions['selftext'].iloc[row]) + " ")
+                try:
+                    if submissions['removed_by_category'].iloc[row] is not None:
+                        f.write(str(submissions['title'].iloc[row]) + " ")
+                        f.write(str(submissions['selftext'].iloc[row]) + " ")
+                except Exception as e: 
+                    print(e)
             placeholder = submissions['created_utc'].max()
             time.sleep(2.1)
-            submissions = self.getSubmissions(after = placeholder)
+            try:
+                submissions = self.getSubmissions(after = placeholder)
+            except Exception as e: 
+                print(e)
         print("Submissions complete.")
         placeholder = self.start_time
         comments = self.getComments(after = placeholder)
         while len(comments) != 0:            
             print("Getting comments....",placeholder)
             for row in range(len(comments)):
-                f.write(str(comments['body'].iloc[row]) + " ")         
+                try:
+                    f.write(str(comments['body'].iloc[row]) + " ") 
+                except Exception as e: 
+                    print(e)        
             placeholder = comments['created_utc'].max()
-            comments = self.getComments(after = placeholder)
+            try:
+                comments = self.getComments(after = placeholder)
+            except Exception as e: 
+                    print(e)  
             time.sleep(2.1)
         print("Comments complete.")
         f.close()
